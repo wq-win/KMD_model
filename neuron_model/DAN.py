@@ -19,8 +19,6 @@ class DAN_Neuron(Neuron):
     def step(self, state, dt, inputs=0):
         phi_new = rk4(dt, state, inputs, self.derivative)
         # todo 阈值重新考虑
-        # if phi_new > self.threshold:
-        #     self.active_KC = True
         return phi_new
 
 
