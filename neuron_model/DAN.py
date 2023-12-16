@@ -21,21 +21,3 @@ class DAN_Neuron(Neuron):
         # todo 阈值重新考虑
         return phi_new
 
-
-dt = 0.1
-t_start = 0
-t_end = 50
-times = np.arange(t_start, t_end, dt)
-
-phi = 0.1
-threshold = 0.5
-DAN = DAN_Neuron(phi=phi, threshold=threshold)
-phi_state = []
-for t in times:
-    phi_state.append(phi)
-    phi = DAN.step(phi, dt)
-phi_state = np.array(phi_state)
-phi_state[phi_state > threshold] = 1
-plt.figure()
-plt.plot(times, phi_state, )
-plt.show()
