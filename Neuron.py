@@ -27,7 +27,10 @@ def sigmoid(x):
 
 class Neuron:
     def __init__(self,phi=0.1, threshold=0.5):
+<<<<<<< HEAD
         # todo 修改初始化赋值
+=======
+>>>>>>> origin/master
         self.phi = phi  # 历史兴奋程度,气体数量
         self.alpha = 0.1  # 进气
         self.N = 1  # 当前兴奋程度
