@@ -60,7 +60,7 @@ class TraceLogger:
 if __name__ == "__main__":
     keys = ['a', 'b', 'c']
     path = os.getcwd()
-    log_file_path = path +'\\log\\'+ time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.pkl'
+    log_file_path = path +'\\log\\Tracelogger\\'+ time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.pkl'
     aTL = TraceLogger(keys, log_file_path=log_file_path, element_number_allowed=2 ** 12)
     for i1 in range(10000):
         step_dict = dict.fromkeys(keys, i1)
