@@ -33,7 +33,7 @@ class DynamicSynapseArrayDict:
 
     def link_dasa(self, dsas, name=None):
         if name is None:
-                name = str(uuid.uuid1().hex)
+            name = str(uuid.uuid1().hex)
         self.linked_dsas[name] = dsas
 
     def step_synapse_dynamics(self, dt, t, modulator_amount, pre_syn_activity=0):
@@ -80,15 +80,18 @@ class DynamicSynapseArrayDict:
         figure_dict_dict = dict()
         ax_dict = dict()
         for key in self.dsa_dict:
-            figure_dict_dict[key], ax_dict[key] = self.dsa_dict[key].plot(path=path + key, save_plots=save_plots, start_time_rate=start_time_rate,
-                                        down_sample_rate=down_sample_rate, linewidth=linewidth, full_scale=full_scale,
-                                        name_str=name_str, neuron_id=neuron_id)
+            figure_dict_dict[key], ax_dict[key] = self.dsa_dict[key].plot(path=path + key, save_plots=save_plots,
+                                                                          start_time_rate=start_time_rate,
+                                                                          down_sample_rate=down_sample_rate,
+                                                                          linewidth=linewidth, full_scale=full_scale,
+                                                                          name_str=name_str, neuron_id=neuron_id)
         if recurrently:
             if self.linked_dsas:
                 for key in self.linked_dsas:
                     self.linked_dsas[key].plot(path=path + key, save_plots=save_plots, start_time_rate=start_time_rate,
-                                        down_sample_rate=down_sample_rate, linewidth=linewidth, full_scale=full_scale,
-                                        name_str=name_str, neuron_id=neuron_id)
+                                               down_sample_rate=down_sample_rate, linewidth=linewidth,
+                                               full_scale=full_scale,
+                                               name_str=name_str, neuron_id=neuron_id)
         return figure_dict_dict, ax_dict
 
 
@@ -98,30 +101,33 @@ if __name__ == "__main__":
     tim_of_recording = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
 
     if inintial_ds:
-        simulation_time_lenth = 10* 60 * 1000
+        simulation_time_lenth = 10 * 60 * 1000
         period = 20000
         dt = simulation_time_interval = 33
         number_of_steps = int(simulation_time_lenth / simulation_time_interval)
         period_steps = int(period / simulation_time_interval)
         modulator_amount = np.zeros(number_of_steps)
-        modulator_amount[int(period_steps/2):period_steps] = 1
+        modulator_amount[int(period_steps / 2):period_steps] = 1
         modulator_amount[int(period_steps) * 2:int(period_steps) * 2 + int(period_steps / 2)] = 1
         number_of_neuron = 2
         number_of_synapses = 3
-        weighters_central = 0  # np.ones((number_of_neuron,number_of_synapses))*0+ 0.4* (np.random.rand(number_of_neuron,number_of_synapses)-0.5)
+        weighters_central = 0   # np.ones((number_of_neuron,number_of_synapses))*0+ 0.4* (np.random.rand(number_of_neuron,number_of_synapses)-0.5)
 
         dsra0 = DSA.DynamicSynapseArray(number_of_synapses=(number_of_neuron, number_of_synapses), period=period,
-                    t_in_period=None, period_var=0.1,
-                    amp=1, weighter_central=weighters_central, weighter_central_update_rate=0.000012,
-                    weighter_oscillate_decay=0.0000003)  # t_in_period=None
+                                        t_in_period=None, period_var=0.1,
+                                        amp=1, weighter_central=weighters_central,
+                                        weighter_central_update_rate=0.000012,
+                                        weighter_oscillate_decay=0.0000003)  # t_in_period=None
         dsra1 = DSA.DynamicSynapseArray(number_of_synapses=(number_of_neuron, number_of_synapses), period=period,
-                    t_in_period=None, period_var=0.1,
-                    amp=1, weighter_central=weighters_central, weighter_central_update_rate=0.000012,
-                    weighter_oscillate_decay=0.0000003)  # t_in_period=None
+                                        t_in_period=None, period_var=0.1,
+                                        amp=1, weighter_central=weighters_central,
+                                        weighter_central_update_rate=0.000012,
+                                        weighter_oscillate_decay=0.0000003)  # t_in_period=None
         dsra2 = DSA.DynamicSynapseArray(number_of_synapses=(number_of_neuron, number_of_synapses), period=period,
-                    t_in_period=None, period_var=0.1,
-                    amp=1, weighter_central=weighters_central, weighter_central_update_rate=0.000012,
-                    weighter_oscillate_decay=0.0000003)  # t_in_period=None
+                                        t_in_period=None, period_var=0.1,
+                                        amp=1, weighter_central=weighters_central,
+                                        weighter_central_update_rate=0.000012,
+                                        weighter_oscillate_decay=0.0000003)  # t_in_period=None
         adsra_dict = DynamicSynapseArrayDict([dsra0, dsra1, dsra2])
         adsra_dict.init_recording()
     # %%
@@ -135,6 +141,7 @@ if __name__ == "__main__":
                 print('%d of %d steps' % (step, number_of_steps))
         adsra_dict.save_recording()
         path = os.getcwd()
-        figure_dict_dict, ax_dict = adsra_dict.plot(path=path + '\\log\\SynapseDict\\', down_sample_rate=1,save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
-# %%
+        figure_dict_dict, ax_dict = adsra_dict.plot(path=path + '\\log\\SynapseDict\\', down_sample_rate=1,
+                                                    save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
+    # %%
     plt.show()
