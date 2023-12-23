@@ -1,7 +1,6 @@
-from collections import deque
 import warnings
 import os
-from filereader import fileload
+from Utils.filereader import fileload
 
 
 class TraceReader:
