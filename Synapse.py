@@ -96,7 +96,7 @@ class DynamicSynapseArray:
         if not log_path:
             # log_path = tempfile.gettempdir()
             log_path = os.getcwd()
-            log_path = log_path + '\\log\\'
+            log_path = log_path + '\\log\\Synapse\\'
             self.log_file_path = os.path.join(log_path, log_name + '.pkl')
         else:
             if log_path.endswith('.pkl'):
@@ -352,5 +352,5 @@ if __name__ == "__main__":
                 print('%d of %d steps' % (step, number_of_steps))
         adsra.save_recording()
         # Please replace path with your current path + /Plots/. You can use os.getcwd() to get it.
-        FigureDict, ax = adsra.plot(path=os.getcwd()+'\\log\\Sunapse\\', down_sample_rate=100,save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
+        FigureDict, ax = adsra.plot(path=os.getcwd()+'\\log\\Synapse\\', down_sample_rate=100,save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
         plt.show()
