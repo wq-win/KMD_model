@@ -351,6 +351,5 @@ if __name__ == "__main__":
             if step % 1000 == 0:
                 print('%d of %d steps' % (step, number_of_steps))
         adsra.save_recording()
-        # Please replace path with your current path + /Plots/. You can use os.getcwd() to get it.
         FigureDict, ax = adsra.plot(path=os.getcwd()+'\\log\\Synapse\\', down_sample_rate=100,save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
         plt.show()
