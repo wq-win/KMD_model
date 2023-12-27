@@ -96,11 +96,9 @@ class DynamicSynapseArray:
             log_name = self.name
         if not log_path:
             # log_path = tempfile.gettempdir()
-            system = ['darwin','linux']
-            # assert system == sys.platform, 'note darwin or linux used /'
             log_path = os.getcwd()
-            if sys.platform in system:
-                log_path = log_path + '/log/Synapse/'
+            if sys.platform in ['darwin','linux']:
+                log_path = log_path + '/KMD_model/log/Synapse/'
             else:
                 log_path = log_path + '\\log\\Synapse\\'
             self.log_file_path = os.path.join(log_path, log_name + '.pkl')
@@ -357,5 +355,10 @@ if __name__ == "__main__":
             if step % 1000 == 0:
                 print('%d of %d steps' % (step, number_of_steps))
         adsra.save_recording()
-        FigureDict, ax = adsra.plot(path=os.getcwd()+'\\log\\Synapse\\', down_sample_rate=100,save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
+        path = os.getcwd()
+        if sys.platform in ['darwin','linux']:
+            path += '/KMD_model/log/Synapse/'
+        else:
+            path += '\\log\\Synapse\\'
+        FigureDict, ax = adsra.plot(path=path, down_sample_rate=100,save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
         plt.show()
