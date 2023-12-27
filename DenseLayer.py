@@ -1,1 +1,1 @@
-import Synapse 
+import Synapse as DSA
