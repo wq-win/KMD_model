@@ -155,9 +155,9 @@ if __name__ == "__main__":
     dsl = DenseLayer(7, 3)
     path = os.getcwd()
     if sys.platform in ['darwin','linux']:
-        path += '/log/Layer/'
+        path += '/log/'
     else:
-        path += '\\log\\Layer\\'
+        path += '\\log\\'
     dsl.assign_dsa()
     dsl.init_recording(log_path=path)
 
