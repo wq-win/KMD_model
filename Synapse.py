@@ -1,4 +1,5 @@
 import tempfile
+import sys
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
@@ -95,8 +96,13 @@ class DynamicSynapseArray:
             log_name = self.name
         if not log_path:
             # log_path = tempfile.gettempdir()
+            system = ['darwin','linux']
+            # assert system == sys.platform, 'note darwin or linux used /'
             log_path = os.getcwd()
-            log_path = log_path + '\\log\\Synapse\\'
+            if sys.platform in system:
+                log_path = log_path + '/log/Synapse/'
+            else:
+                log_path = log_path + '\\log\\Synapse\\'
             self.log_file_path = os.path.join(log_path, log_name + '.pkl')
         else:
             if log_path.endswith('.pkl'):
