@@ -98,7 +98,7 @@ class DynamicSynapseArray:
             # log_path = tempfile.gettempdir()
             log_path = os.getcwd()
             if sys.platform in ['darwin','linux']:
-                log_path = log_path + '/KMD_model/log/Synapse/'
+                log_path = log_path + '/log/Synapse/'
             else:
                 log_path = log_path + '\\log\\Synapse\\'
             self.log_file_path = os.path.join(log_path, log_name + '.pkl')
@@ -357,7 +357,7 @@ if __name__ == "__main__":
         adsra.save_recording()
         path = os.getcwd()
         if sys.platform in ['darwin','linux']:
-            path += '/KMD_model/log/Synapse/'
+            path += '/log/Synapse/'
         else:
             path += '\\log\\Synapse\\'
         FigureDict, ax = adsra.plot(path=path, down_sample_rate=100,save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
