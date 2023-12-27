@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import time
 import uuid
@@ -99,7 +100,11 @@ if __name__ == "__main__":
     inintial_ds = 1
     single_simulation = 1
     tim_of_recording = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-
+    path = os.getcwd()
+    if sys.platform in ['darwin','linux']:
+        path += '/log/SynapseDict/'
+    else:
+        path += '\\log\\SynapseDict\\'
     if inintial_ds:
         simulation_time_lenth = 10 * 60 * 1000
         period = 20000
@@ -129,7 +134,7 @@ if __name__ == "__main__":
                                         weighter_central_update_rate=0.000012,
                                         weighter_oscillate_decay=0.0000003)  # t_in_period=None
         adsra_dict = DynamicSynapseArrayDict([dsra0, dsra1, dsra2])
-        adsra_dict.init_recording()
+        adsra_dict.init_recording(log_path=path)
     # %%
     if single_simulation:
         # %%
@@ -140,8 +145,7 @@ if __name__ == "__main__":
             if step % 1000 == 0:
                 print('%d of %d steps' % (step, number_of_steps))
         adsra_dict.save_recording()
-        path = os.getcwd()
-        figure_dict_dict, ax_dict = adsra_dict.plot(path=path + '\\log\\SynapseDict\\', down_sample_rate=1,
+        figure_dict_dict, ax_dict = adsra_dict.plot(path=path, down_sample_rate=1,
                                                     save_plots=True, linewidth=0.2, name_str=tim_of_recording)  # path=
     # %%
     plt.show()
