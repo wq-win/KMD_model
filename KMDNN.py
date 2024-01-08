@@ -4,6 +4,7 @@ import dill
 import os
 import numpy as np
 from DenseLayer import DenseLayer
+from Neuron import Neuron, rk4
 
   
 def sigmoid(x):  
@@ -22,6 +23,10 @@ class KMDNN:
         self.input_dict = {'K_M':np.random.normal(0,0.1,6),
                            'K_D':np.random.normal(0,0.1,6),
                            'D_K':np.random.normal(0,0.1,3)}
+        
+        self.KC = Neuron()
+        self.MBON = Neuron()
+        self.DAN = Neuron()
 
     def amp_control(self, rate=1):
         for key in self.layers:
@@ -56,16 +61,38 @@ class KMDNN:
         self.layers['K_D'].step(self.input_dict['K_D'],dt)
         self.layers['D_K'].step(self.input_dict['D_K'],dt)
         
+        # 瞬时兴奋程度怎么改变,历史兴奋程度state的初值0.1是否合适？
+        self.phi = self.KC.step(state=0.1)
+        self.rho = self.MBON.step(state=0.1)
+        self.sigma = self.DAN.step(state=0.1)
+        
     def update(self):
         for key in self.layers:
             self.layers[key].update()
 
+    def derivative_KC_MBON(self, state, inputs=0):
+        # self.layers['K_M'].dsas.weighters = state
+        return self.phi * self.rho * self.DAN.N
+         
+    
+    def derivative_KC_DAN(self, state, inputs=0):
+        # TODO: 
+        pass
+    
+    def derivative_DAN_KC(self, state, inputs=0):
+        return self.sigma * self.phi
+    
     def step_synapse_dynamics(self, dt, t, modulator_amount, pre_syn_activity=0):
-        for key in self.layers:
-            self.layers[key].step_synapse_dynamics(dt, t, modulator_amount)
-
+        # for key1 in self.layers:
+        #     for key2 in self.layers[key1].dsas:
+        #         self.layers[key1].dsas[key2].weighters
+        self.layers['K_M'].dsas.weighters = rk4(dt,self.layers['K_M'].dsas.weighters, 0, self.derivative_KC_MBON)
+        self.layers['K_D'].dsas.weighters = rk4(dt,self.layers['K_D'].dsas.weighters,0, self.derivative_KC_DAN)
+        self.layers['D_K'].dsas.weighters = rk4(dt,self.layers['D_K'].dsas.weighters,0,self.derivative_DAN_KC)
+        
     def plot(self, path='',key='K_M'):
         self.layers['K_M'].plot(path)
+        # TODO
     
     def save_model(self, save_path=''):
         if not save_path:
