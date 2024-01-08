@@ -76,7 +76,7 @@ class KMDNN:
          
     
     def derivative_KC_DAN(self, state, inputs=0):
-        # TODO: 
+        # TODO: KC增量更新？
         pass
     
     def derivative_DAN_KC(self, state, inputs=0):
@@ -92,7 +92,7 @@ class KMDNN:
         
     def plot(self, path='',key='K_M'):
         self.layers['K_M'].plot(path)
-        # TODO
+        # TODO: 画图
     
     def save_model(self, save_path=''):
         if not save_path:
@@ -112,3 +112,4 @@ class KMDNN:
 
 if __name__ == "__main__":
     kmd = KMDNN()
+    # TODO: 测试
