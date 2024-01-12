@@ -25,10 +25,11 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-class Neuron:
+class NeuronHistory:
     def __init__(self,phi=0.1, threshold=0.5):
         # todo 修改初始化赋值
         self.phi = phi  # 历史兴奋程度,气体数量
+        self.phi_new = phi
         self.alpha = 0.1  # 进气
         self.N = 1  # 当前兴奋程度
         self.beta = 0.1  # 漏气
@@ -40,6 +41,16 @@ class Neuron:
         return Dphi
 
     def step(self, state, dt, inputs=0):
-        phi_new = rk4(dt, state, inputs, self.derivative)
-        return phi_new
+        self.phi_new = rk4(dt, state, inputs, self.derivative)
+        return self.phi_new
 
+class Neuron(NeuronHistory):
+    def __init__(self, phi=0.1, threshold=0.5, activation_func=sigmoid):
+        super().__init__(phi, threshold)
+        self.activation_function=activation_func
+    
+    def step(self, state, dt, inputs=0):
+        = state
+        self.N = self.activation_function()
+        super().step(state, dt, inputs)
+        return 
