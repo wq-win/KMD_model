@@ -19,16 +19,16 @@ class KMDSimple():
         record = list()
         for i, KC in enumerate(self.KC):
             if KC >= self.threshold:
-                record.append(i)
+                record.append(i+1)
             else: continue
         return record
 
     def KC_MBON_DAN(self):
-        if 0 in self.isthreshold() and 1 in self.isthreshold():
+        if 1 in self.isthreshold() and 2 in self.isthreshold():
             self.MBON[0] = 1
-        if 1 in self.isthreshold() and 5 in self.isthreshold():
+        if 2 in self.isthreshold() and 6 in self.isthreshold():
             self.MBON[1] = 1
-        if 2 in self.isthreshold() and 4 in self.isthreshold():
+        if 3 in self.isthreshold() and 5 in self.isthreshold():
             self.MBON[2] = 1
         return self.MBON
         
@@ -42,6 +42,10 @@ class KMDSimple():
             self.KC_add = [0,0.4,1,0.4,1,0]
             self.KC = [min(1,self.KC[i] + self.KC_add[i]) for i in range(6)]
             self.KC[0] = 0
+        else:
+            for i, item in enumerate(self.KC):
+                if 0 < item<1:
+                    item -= 0.1
 
         if self.MBON == [0,1,0] and self.t == 2:
             self.t = 0
@@ -50,6 +54,11 @@ class KMDSimple():
             self.KC_add = [1,1,0,0.4,0.4,0]
             self.KC = [min(1, self.KC[i] + self.KC_add[i]) for i in range(6)]
             self.KC[5] = 0
+        else:
+            for i, item in enumerate(self.KC):
+                if 0 < item<1:
+                    item -= 0.1
+                    
         if self.MBON == [0,0,1] and self.t == 4:
             self.t = 0
             self.MBON = [0,0,0]
@@ -57,10 +66,9 @@ class KMDSimple():
             self.KC_add = [0,1,0,0.4,0.4,1]
             self.KC = [min(1, self.KC[i] + self.KC_add[i]) for i in range(6)]
             self.KC[2] = 0
-
         else:
             for i, item in enumerate(self.KC):
-                if item>0 and item<1:
+                if 0 < item<1:
                     item -= 0.1
 
 
