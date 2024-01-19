@@ -6,13 +6,13 @@ def sigmoid(input):
 class KMDSimple():
     def __init__(self, NumberofTask=3, t=0, dt=1):
         # self.TaskList = ["t1", "t3", "t2"]
-        self.tlist = [3,2,4]
+        # self.tlist = [3,2,4]
         self.KC = [1,1,0,0,0,0]
         self.KC_add = [0] * 6
         self.MBON = [0,0,0]
         self.DAN = [0,0,0]
         self.threshold = 1
-        self.dt = dt
+        # self.dt = dt
         self.t = t
 
     def isthreshold(self):
