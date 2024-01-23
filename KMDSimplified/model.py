@@ -36,11 +36,9 @@ class KMDmodel():
         tokc = []
         pokc = []
         self.KC = np.zeros(len(self.KC))
-        # self.MBON = np.zeros(len(self.MBON))
         for i, value in enumerate(inputMBON):
             if value == 1:
                 tokc = self.task_output_KC[str(i)]
-                # pokc = self.potential_KC[str(i)]
         for i, value in enumerate(inputDAN):
             if value == 1:
                 pokc = self.potential_KC[str(i)]        
@@ -60,7 +58,6 @@ class KMDmodel():
         # print(self.KC,self.MBON,self.DAN)
         self.t += 1
         self.t %= 3   
-        # print(n)     
 
 kmd = KMDmodel()
 kmd.KC = [1,1,0,0,0,0]
