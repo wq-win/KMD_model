@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 def sigmoid(x):  
-    return 1 / (1 + np.exp(-np.array(x)))
+    return 1 / (1 + np.exp(-(np.array(x)-2)))
 
 class KMDmodel():
     def __init__(self,n_K=6,n_M=3,n_D=3) -> None:
@@ -50,6 +50,16 @@ class KMDmodel():
         self.KC = np.array(self.KC)
         self.KC[self.KC>1] = 1
          
+    # 输入DAN，输出KC，MBON
+    for i in plotlens:
+        kmd.DAN = [random.choice([0,1]) for _ in range(3)]
+        # print(kmd.DAN)
+        inputDANlist.append(kmd.DAN)
+        # print(kmd.outputKC(kmd.inputsensor,kmd.DAN))
+        kmd.outputKC(inputsensorlist[i],kmd.DAN)
+        KClist.append(kmd.KC)
+        kmd.outputMBON()
+        MBONlist.append(kmd.MBON)
 
     def step(self):
         n = self.t
