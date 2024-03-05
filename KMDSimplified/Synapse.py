@@ -33,7 +33,7 @@ class Synapse:
         # 超参数
         self.alpha = 0.5
         self.tau = 0.5
-        self.dt = 1
+        self.dt = 0.01
 
     # def derivative(self, state, inputs=0):
     #     w = state
@@ -49,6 +49,7 @@ class Synapse:
         return Dw        
         
     def step(self, state, dt, inputs=0):
+        
         statenew = rk4(dt, state, inputs, self.derivative)
         return statenew
  
@@ -60,7 +61,11 @@ if __name__ == "__main__":
         KCtoMBON.preneuron = np.array([[random.choice([0,1]) for _ in range(6)]])
         KCtoMBON.postneuron = np.array([[random.choice([0,1]) for _ in range(3)]])
         KCtoMBON.isreward = np.array(random.choice([0,1]))
-        w = KCtoMBON.step(w,1)
-        wlist.append(w)
+        w = KCtoMBON.step(w,KCtoMBON.dt)
+        print(i)
+        print(KCtoMBON.isreward)
+        print(KCtoMBON.preneuron)
+        print(KCtoMBON.postneuron)
+        print(w)
 
-    print(wlist)
+    # print(wlist)
