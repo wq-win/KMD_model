@@ -30,8 +30,10 @@ class Lowpass:
         Dhistory = self.tau * (self.current - history)
         return Dhistory
 
-    def step(self, state, dt, inputs=0):
+    def step(self, dt, inputs=0):
+        state = self.history
         statenew = rk4(dt, state, inputs, self.derivative)
+        self.history = statenew
         return statenew
 
         
@@ -39,7 +41,6 @@ if __name__ == "__main__":
     lowpass = Lowpass()
     hlist = []
     inputlist = []
-    h = lowpass.history
     t = range(500)
     for i in t:
         if i < 200:
@@ -53,7 +54,7 @@ if __name__ == "__main__":
         else:
             lowpass.current = 0
         inputlist.append(lowpass.current)
-        h = lowpass.step(h,1)
+        h = lowpass.step(1)
         hlist.append(h)
 
     # print(hlist)
