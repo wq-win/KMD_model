@@ -1,71 +1,154 @@
-import random
-from matplotlib import pyplot as plt
+from Neuron import Neuron, rk4
 import numpy as np
-
-def rk4(h, y, inputs, f):
-    '''
-    用于数值积分的rk4函数。
-    args:
-        h - 步长
-        y - 当前状态量
-        inputs - 外界对系统的输入
-        f - 常微分或偏微分方程
-    return:
-        y_new - 新的状态量,即经过h时间之后的状态量
-    '''
-    k1 = f(y, inputs)
-    k2 = f(y + h / 2 * k1, inputs)
-    k3 = f(y + h / 2 * k2, inputs)
-    k4 = f(y + h * k3, inputs)
-
-    y_new = y + h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-    return y_new
+from matplotlib import pyplot as plt
 
 
 class Synapse:
-    def __init__(self,n_preneuron,n_postneuron) -> None:
-        self.n_preneuron = n_preneuron
-        self.n_postneuron = n_postneuron
-        self.preneuron = np.array([[random.choice([0,1]) for _ in range(self.n_preneuron)]])
-        self.postneuron = np.array([[random.choice([0,1]) for _ in range(self.n_postneuron)]])
-        self.weight = np.zeros([self.n_preneuron, self.n_postneuron])
-        self.isreward = np.array(random.choice([0,1]))
-        # 超参数
-        self.alpha = 0.5
-        self.tau = 0.5
-        self.dt = 0.01
-
-    # def derivative(self, state, inputs=0):
-    #     w = state
-    #     Dw = np.zeros_like(self.weight)
-    #     for r in range(self.weight.shape[0]):
-    #         for c in range(self.weight.shape[1]):
-    #             Dw[r][c] = (self.preneuron[r]  - w[r][c]) * self.postneuron[c] * self.isreward
-    #     return Dw        
+    def __init__(self, preNeuron:Neuron, postNeuron:Neuron, weight=None, reward=0, alpha=1, beta=1, dt=0.01, tau=1,) -> None:
+        self.preNeuron = preNeuron
+        self.postNeuron = postNeuron 
+        self.preNum = self.preNeuron.num
+        self.postNum = self.postNeuron.num
+        self.preI = self.preNeuron.I
+        self.postI = self.postNeuron.I
+        self.prePotential = self.preNeuron.potential
+        self.prePotentialnew = self.prePotential 
+        self.preTrajectory = self.prePotential  # self.preNeuron.trajectory
+        self.preTrajectorynew = self.preTrajectory
+        self.postPotential = self.postNeuron.potential
+        self.postPotentialnew = self.postPotential
+        self.postTrajectory = self.postPotential  # self.preNeuron.trajectory
+        self.postTrajectorynew = self.postTrajectory
+        if weight is not None:
+            self.weight = weight
+        else:
+            assert weight is not None, "The weight is None."
+        assert self.weight.shape == (self.postNum, self.preNum), "The shape of the weight does not match. "
+        self.reward = np.array(reward)
+        self.alpha = alpha
+        self.beta = beta
+        self.dt = dt
+        self.tau = tau
+        
+    def derivative(self, state, inputs=0):
+        w = state
+        Dw = (np.matmul(self.beta * np.tile(self.postTrajectory, self.postNum), (self.alpha * self.preTrajectory.T - w)) * self.reward) / self.tau
+        return Dw
+    
+    def step(self, dt, preI, inputs=0):
+        self.preI = preI
+        if dt is None:
+            dt = self.dt
+        state = self.weight
+        statenew = rk4(dt, state, inputs, self.derivative)
+        self.weight = statenew
+        self.preTrajectorynew = self.preNeuron.step(self.preNeuron.dt, self.preI)
+        self.postI = np.matmul(self.weight, self.prePotential)
+        self.postTrajectorynew = self.postNeuron.step(self.postNeuron.dt, self.postI)
+        return statenew
+    
+    def update(self):
+        self.prePotential = self.preNeuron.potential   
+        self.preTrajectory = self.preTrajectorynew
+        self.postPotential = self.postNeuron.potential
+        self.postTrajectory = self.postTrajectorynew  
+        # self.preNeuron.potential = self.prePotentialnew 
+        # self.postNeuron.potential = self.postPotential
+        self.preNeuron.update()
+        self.postNeuron.update()
+        
+        
+        
+class SynapseKM(Synapse):
+    def __init__(self, preNeuron: Neuron, postNeuron: Neuron, weight=None, reward=0, alpha=1, beta=1, dt=0.01, tau=1) -> None:
+        super().__init__(preNeuron, postNeuron, weight, reward, alpha, beta, dt, tau)
     
     def derivative(self, state, inputs=0):
-        w = state        
-        Dw = np.matmul((np.tile(self.preneuron.T, self.n_postneuron) - w), np.tile(self.postneuron.T, self.n_postneuron)) * self.isreward
-        return Dw        
-        
-    def step(self, state, dt, inputs=0):
-        
-        statenew = rk4(dt, state, inputs, self.derivative)
-        return statenew
- 
-if __name__ == "__main__":       
-    KCtoMBON = Synapse(6,3)
-    wlist = []
-    w = KCtoMBON.weight
-    for i in range(5):
-        KCtoMBON.preneuron = np.array([[random.choice([0,1]) for _ in range(6)]])
-        KCtoMBON.postneuron = np.array([[random.choice([0,1]) for _ in range(3)]])
-        KCtoMBON.isreward = np.array(random.choice([0,1]))
-        w = KCtoMBON.step(w,KCtoMBON.dt)
-        print(i)
-        print(KCtoMBON.isreward)
-        print(KCtoMBON.preneuron)
-        print(KCtoMBON.postneuron)
-        print(w)
+        return super().derivative(state, inputs)
+    
+    def step(self, dt, preI, inputs=0):
+        return super().step(dt, preI, inputs)
 
-    # print(wlist)
+    def update(self):
+        return super().update()
+
+
+class SynapseKD(Synapse):
+    def __init__(self, preNeuron: Neuron, postNeuron: Neuron, weight=None, reward=0, alpha=1, beta=1, dt=0.01, tau=1) -> None:
+        super().__init__(preNeuron, postNeuron, weight, reward, alpha, beta, dt, tau)
+        self.delta = self.preNeuron.delta
+        
+    def derivative(self, state, inputs=0):
+        w = state
+        delta = self.delta
+        Dw = (np.matmul(self.beta * np.tile(self.postPotential, self.postNum), (self.alpha * delta.T - w)) * self.reward) / self.tau
+        return Dw
+    
+    def step(self, dt, preI, inputs=0):
+        return super().step(dt, preI, inputs)
+    
+    def update(self):
+        self.preNeuron.trajectory = self.preTrajectorynew
+        self.delta = self.preNeuron.updateDelta()
+        return super().update()
+
+
+class SynapseDK(Synapse):
+    def __init__(self, preNeuron: Neuron, postNeuron: Neuron, weight=None, reward=0, alpha=1, beta=1, dt=0.01, tau=1) -> None:
+        super().__init__(preNeuron, postNeuron, weight, reward, alpha, beta, dt, tau)
+        self.delta = self.postNeuron.delta
+        
+    def derivative(self, state, inputs=0):
+        w = state
+        delta = self.delta
+        Dw = (np.matmul(self.beta * np.tile(delta, self.postNum), (self.alpha * self.preTrajectory.T - w)) * self.reward) / self.tau
+        return Dw
+    
+    def step(self, dt, preI, inputs=0):
+        return super().step(dt, preI, inputs)
+    
+    def update(self):
+        self.delta = self.postNeuron.updateDelta()
+        return super().update()
+
+
+
+
+t = range(100)
+
+numKC, numMBON, numDAN = 6, 3, 3    
+# 测试synapseKM
+initWeightKM = np.ones([numMBON,numKC]) * .1
+IKC = np.ones(numKC).reshape(numKC,1)
+
+# IMBON = np.ones(numMBON).reshape(numMBON,1)
+KC = Neuron(numKC,IKC)
+IMBON = np.matmul(initWeightKM, KC.potential)
+MBON = Neuron(numMBON,IMBON)
+
+skm = SynapseKM(KC, MBON, initWeightKM, 1)
+skmweight,KCp,KCt,MBONp,MBONt = [],[],[],[],[]
+KCI, MBONI = [], []
+for i in t:
+    KCI.append(skm.preI[0][0])
+    MBONI.append(skm.postI[0][0])
+    KCp.append(skm.prePotential[0][0])
+    KCt.append(skm.preTrajectory[0][0])
+    MBONp.append(skm.postPotential[0][0])
+    MBONt.append(skm.postTrajectory[0][0])
+    KMWeight = skm.step(.1)
+    skm.update()
+    skmweight.append(KMWeight[0][0])
+
+    
+print(MBONp[:10])
+print(MBONp[::-1][:10])
+plt.plot(t,KCI,label='KCI')
+plt.plot(t,MBONI,label='MBONI')
+plt.plot(t,skmweight, label='skmweight')
+plt.plot(t,KCp, label='KCp')
+plt.plot(t,KCt, label='KCt',linestyle='--')
+plt.plot(t,MBONp, label='MBONp')
+plt.plot(t,MBONt, label='MBONt')
+plt.legend()
+plt.show()
