@@ -82,39 +82,4 @@ class Neuron:
         self.trajectory = self.trajectorynew
         self.updateDelta()
         self.lowpassfilter.update()
-        
-
-if __name__ == "__main__":
-    t = range(500)
-    # 测试Neuron
-    num = 6
-    I = np.zeros(num).reshape(num,1)
-    KC = Neuron(num,I,tau=0.1)
-    plist, tlist = [], []
-    for i in t:
-        if i < 200:
-            I = np.array([[0.5 * i / 100, 0.5 * i / 100 *2, 1.5 * i / 100, 0.5 * i / 100 *4, 2.5 * i / 100, 0.5 * i / 100 *6]])
-        elif 200 <= i < 300 :
-            I = np.array([[0, 0, 0, 0, 0, 0]])
-        elif 300 <= i < 325:
-            I = np.array([[4 * (i - 300) / 100, 4 * (i - 300) / 100 *2, 4 * (i - 300) / 100, 4 * (i - 300) / 100 *2, 4 * (i - 300) / 100, 4 * (i - 300) / 100 *2]])
-        elif 325<= i < 400:
-            I = np.array([[1, 2, 3, 4, 5, 6]])
-        else:
-            I = np.array([[0, 0, 0, 0, 0, 0]])
-
-        tra = KC.step(1, I)
-        # print(tra)
-        plist.append(KC.potential[0])
-        KC.update()
-        tlist.append(tra[0])  # 不知道为什么正常应该是[],结果实际返回[[]]   
-    plt.figure()
-    plt.plot(t, plist)
-    plt.plot(t, tlist, '--')
-    # plt.plot(t,np.array(plist).T[0])
-    # plt.plot(t,np.array(tlist).T[0][0])
-    # plt.plot(t,np.array(plist).T[1])
-    # plt.plot(t,np.array(tlist).T[1][0])
-    plt.show()    
-
-    
+  

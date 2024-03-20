@@ -27,7 +27,7 @@ class LowPassFilter:
     step()返回history,
     update()更新current,
     """
-    def __init__(self, current=None, history=None, tau=0.1, dt=0.1) -> None:
+    def __init__(self, current=None, history=None, tau=0.1, dt=1) -> None:
         if current is not None:
             self.current = current
         else:
@@ -62,33 +62,3 @@ class LowPassFilter:
     def update(self):
         self.current = self.currentnew
         self.history = self.historynew
-        
-        
-if __name__ == "__main__":
-    lpf = LowPassFilter(current=0)
-    hlist = []
-    inputlist = []
-    t = range(500)
-    dt = 1
-    for i in t:
-        if i < 200:
-            cur = np.array([0.5 * i / 100, 0.5 * i / 100 *2])
-        elif 200 <= i < 300 :
-            cur = np.array([0, 0])
-        elif 300 <= i < 325:
-            cur = np.array([4 * (i - 300) / 100, 4 * (i - 300) / 100 *2])
-        elif 325<= i < 400:
-            cur = np.array([1, 2])
-        else:
-            cur = np.array([0, 0])
-        inputlist.append(cur)
-        h = lpf.step(dt, cur)
-        lpf.update()
-        hlist.append(h)
-    # print(np.array(hlist).shape, np.array(inputlist).shape)
-    # print(hlist)
-    plt.figure()
-    plt.xlim(0,dt*500)
-    plt.plot(t,inputlist)
-    plt.plot(t,hlist)
-    plt.show()
