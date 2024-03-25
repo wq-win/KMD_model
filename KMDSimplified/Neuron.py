@@ -82,4 +82,3 @@ class Neuron:
         self.trajectory = self.trajectorynew
         self.updateDelta()
         self.lowpassfilter.update()
-  
