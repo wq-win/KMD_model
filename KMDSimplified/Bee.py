@@ -1,122 +1,131 @@
-import numpy as np
-import cv2
-import matplotlib.pyplot as plt
-import PIL.Image as Image
-import gym
 import random
+import sys
+from contextlib import closing
+from io import StringIO
+from gym import utils
+from gym.envs.toy_text import discrete
+import numpy as np
+from tqdm import tqdm
 
-from gym import Env, spaces
-import time
 
-font = cv2.FONT_HERSHEY_COMPLEX_SMALL
+MAP = [
+    "    +-----+",
+    "bee | : : |",
+    "food| : : |",
+    "    +-----+",
+]
 
 
-class Point(object):
-    def __init__(self, name, x_max, x_min, y_max, y_min):
-        self.x = 0
-        self.y = 0
-        self.x_min = x_min
-        self.x_max = x_max
-        self.y_min = y_min
-        self.y_max = y_max
-        self.name = name
-
-    def set_position(self, x, y):
-        self.x = self.clamp(x, self.x_min, self.x_max - self.icon_w)
-        self.y = self.clamp(y, self.y_min, self.y_max - self.icon_h)
-
-    def get_position(self):
-        return (self.x, self.y)
-
-    def move(self, del_x, del_y):
-        self.x += del_x
-        self.y += del_y
-
-        self.x = self.clamp(self.x, self.x_min, self.x_max - self.icon_w)
-        self.y = self.clamp(self.y, self.y_min, self.y_max - self.icon_h)
-
-    def clamp(self, n, minn, maxn):
-        return max(min(maxn, n), minn)
-    
-
-class Bee(Point):
-    def __init__(self, name, x_max, x_min, y_max, y_min):
-        super().__init__(name, x_max, x_min, y_max, y_min)
-        self.icon = cv2.imread("bee.png") / 255.0
-        self.icon_w = 32
-        self.icon_h = 32
-        self.icon = cv2.resize(self.icon, (self.icon_w, self.icon_h))
-  
+class BeeFoodEnv(discrete.DiscreteEnv):
+    def __init__(self, num_locations=3):
+        self.num_locations = num_locations
+        self.reward_options = (0, 1)
+        # self.bee_locations = self.num_locations
+        # self.food_loactions = self.num_locations
+        # TODO: observation 是bee的state * food的state 还是只有bee的location？
+        # num_states = self.bee_locations * self.food_loactions
+        num_states = self.num_locations * self.num_locations  # bee的state * food的state
         
-class Food(Point):
-    def __init__(self, name, x_max, x_min, y_max, y_min):
-        super().__init__(name, x_max, x_min, y_max, y_min)
-        self.icon = cv2.imread("food.png") / 255.0
-        self.icon_w = 32
-        self.icon_h = 32
-        self.icon = cv2.resize(self.icon, (self.icon_w, self.icon_h))
+        initial_state_distrib = np.zeros(num_states)
+        initial_state_distrib[0] = 1  # TODO:可以让0，1，2三个状态平均概率随机 [0:3]=1
+        initial_state_distrib /= initial_state_distrib.sum()
+
+        action_dict = {0: 'pull', 1: 'not move', 2: 'right', 3: 'left', 4: 'stand up'}
+        num_actions = len(action_dict)  # 0:拽 1:不动 2:右移 3:左移 4:站立
         
-
-class TaskEnv(Env):
-    def __init__(self) -> None:
-        super().__init__()
+        P = {
+            state: {action: [] for action in range(num_actions)}
+            for state in range(num_states)
+        }
+        # P[s][a] == [(probability, nextstate, reward, done), ...]
         
-        # Define a 2-D observation space
-        self.observation_shape = (600, 800, 3)  # h:600, w:800
-        self.observation_space = spaces.Box(low=np.zeros(self.observation_shape),
-                                            high=np.ones(self.observation_shape),
-                                            dtype=np.float16)
+        for state in range(num_states):
+            for action in range(num_actions):
+                prob, reward, done = 1, self.reward_options[0], False
+                
+                if action == 0:  # pull
+                    # if state in (0, 3, 4):  # 拽食物更困难, 
+                    #     prob = .6
+                    next_state = state + self.num_locations
+                    if state in range(num_states)[-num_locations:]:  # 若food在最右边，继续拽，状态不变
+                        next_state = state  
+                elif action == 1:  # not move
+                    next_state = state 
+                elif action == 2:  # right
+                    next_state = state + 1
+                    prob = .88  # 1-prob概率移动失败
+                    if state in range(num_states)[num_locations-1::num_locations]:  # 若bee在最右边，继续右移，状态不变
+                        next_state = state
+                elif action == 3:  # left
+                    next_state = state - 1 
+                    prob = .88  # 1-prob概率移动失败
+                    if state in range(num_states)[::num_locations]:  # 若bee在最左边，继续左移，状态不变
+                        next_state = state
+                elif action == 4:  # stand up
+                    next_state = state
+                    if state == num_states-1:
+                        reward = self.reward_options[1]
+                        done = True 
+                                
+                P[state][action].append((prob, next_state, reward, done))
+                if prob != 1:
+                    P[state][action].append((1-prob, state, reward,done))  # 动作执行失败，状态不变
 
-        # Define an action space ranging from 0 to 4
-        self.action_space = spaces.Discrete(5)
-
-        # Create a canvas to render the environment images upon
-        self.canvas = np.ones(self.observation_shape) * 1
-
-        # Define elements present inside the environment
-        self.elements = []
-        
-        # Maximum fuel chopper can take at once
-        # self.max_fuel = 1000
-
-        # Permissible area of helicper to be
-        # self.y_min = int(self.observation_shape[0] * 0.1)
-        self.y_min = 0
-        self.x_min = 0
-        # self.y_max = int(self.observation_shape[0] * 0.9)
-        self.y_max = self.observation_shape[0]
-        self.x_max = self.observation_shape[1]
+        # for key, value in P.items():
+        #     print(key,value)      
+        # print(P[0][0])
+        self.mapInit()
+        discrete.DiscreteEnv.__init__(
+            self, num_states, num_actions, P, initial_state_distrib
+        )
     
-    def get_action_meanings(self, action):
-        action_dict = {0: "Down", 1: "Up", 2: "Right", 3: "Left",  4: "Do Nothing"}
-        return action_dict[action]
+    def mapInit(self):
+        self.desc = np.asarray(MAP, dtype="c")
+        self.layer_name_length = 3
+        # first_letter = 'B'
+        # second_letter = 'F'
+        # self.desc[1, self.layer_name_length + 2] = first_letter
+        # self.desc[2, self.layer_name_length + 2] = second_letter
     
-    def draw_elements_on_canvas(self):
-        # Init the canvas
-        self.canvas = np.ones(self.observation_shape) * 1
-
-        # Draw the heliopter on canvas
-        for elem in self.elements:
-            elem_shape = elem.icon.shape  # (h,w)
-            x, y = elem.x, elem.y
-            self.canvas[y: y + elem_shape[0], x: x + elem_shape[1]] = elem.icon
-
-        # text = 'Fuel Left: {} | Rewards: {}'.format(self.fuel_left, self.ep_return)
-
-        text = 'Rewards:{}'.format(self.ep_return)
-
-        # Put the info on canvas
-        self.canvas = cv2.putText(self.canvas, text, (10, 20), font,
-                                  0.8, (0, 0, 0), 1, cv2.LINE_AA)
-        
-    def reset(self):
-        return super().reset()
+    def render(self, mode="human"):
+        outfile = StringIO() if mode == "ansi" else sys.stdout
+        out = self.desc.copy().tolist()    
+        out = [[c.decode("utf-8") for c in line] for line in out]
+        bee_location = self.s % self.num_locations
+        food_location = self.s // self.num_locations
+        out[1][self.layer_name_length + (bee_location + 1) * 2] = utils.colorize('B', "yellow", highlight=True)
+        out[2][self.layer_name_length + (food_location + 1) * 2] = utils.colorize('F', "green", highlight=True)
+        outfile.write("\n".join(["".join(row) for row in out]) + "\n")
+        # No need to return anything for human
+        if mode != "human":
+            with closing(outfile):
+                return outfile.getvalue()
+            
+            
+if __name__ == "__main__":
+    env = BeeFoodEnv(2)
+    obs = env.reset()
     
-    def render(self, mode='human'):
-        return super().render(mode)
-    
-    def step(self, action):
-        return super().step(action)
-    
-    def close(self):
-        return super().close()
+    done_step = 0
+    average_step = 0
+    eps = 1000000
+    with tqdm(total=eps) as pbar:
+        for _ in range(eps):
+            done_step = 0
+            obs = env.reset()
+            while True:
+                action = env.action_space.sample()
+            
+                obs, reward, done, info = env.step(action)
+
+                # print('action:%d, state:%d, reward:%d, done:%s, info:%s' % (action, obs, reward, done, info))
+            
+                # env.render()
+                done_step += 1
+                if done:
+                    # print('done')
+                    average_step += done_step
+                    break
+            pbar.update()
+    print(average_step/eps)
+    env.close()
