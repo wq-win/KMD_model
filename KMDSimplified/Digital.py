@@ -114,14 +114,19 @@ class DiditalEnv(discrete.DiscreteEnv):
                         done = True
                 elif action == 1:
                     next_state = state + 1
+                    prob = .88
                     if  next_state > num_states-1:
                         next_state = num_states-1
                 else:
-                    next_state = state - 1 
+                    next_state = state - 1
+                    prob = .88 
                     if next_state < 0:
                         next_state = 0
                         
                 P[state][action].append((prob, next_state, reward, done))
+                if prob != 1:
+                    P[state][action].append((1-prob, state, reward,done))  # 动作执行失败，状态不变
+
         # for key, value in P.items():
         #     print(key,value) 
         self.mapInit()
