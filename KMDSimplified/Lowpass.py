@@ -43,8 +43,11 @@ class LowPassFilter:
     
     def derivative(self, state, inputs=0):
         history = state
-        Dhistory = self.tau * (self.current - history)
+        # Dhistory = self.tau * (self.current - history)
+        Dhistory = self.tau * (self.current - history ** 3 + history ** 2 + history)
         return Dhistory
+
+
 
     def step(self, dt, current, inputs=0 ):
         """
