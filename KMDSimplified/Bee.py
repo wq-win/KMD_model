@@ -51,7 +51,7 @@ class BeeFoodEnv(discrete.DiscreteEnv):
     def __init__(self, num_locations = 3):
         assert 2 <= num_locations <= 6, 'The number of locations is between 2 and 6'
         self.num_locations = num_locations
-        self.reward_options = (0, 1)
+        self.reward_options = (-1, 1)
         # bee的state * food的state * 是否握住绳子
         num_states = self.num_locations * self.num_locations * 2
         
